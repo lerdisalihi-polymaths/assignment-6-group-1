@@ -1,102 +1,73 @@
-# VPC Outputs
-output "vpc_id" {
-  description = "The ID of the VPC"
-  value       = module.vpc.vpc_id
+output "alb_dns_name" {
+  value = module.alb.alb_dns_name
 }
-
-output "vpc_cidr_block" {
-  description = "The CIDR block of the VPC"
-  value       = module.vpc.vpc_cidr_block
+output "cloudfront_domain_name" {
+  value = module.cloudfront.cloudfront_domain_name
 }
-
-output "public_subnet_ids" {
-  description = "List of public subnet IDs"
-  value       = module.vpc.public_subnet_ids
+output "frontend_bucket_arn" {
+  value = module.s3.frontend_bucket_arn
 }
-
-output "private_subnet_ids" {
-  description = "List of private subnet IDs"
-  value       = module.vpc.private_subnet_ids
-}
-
-# ECS Outputs
-output "ecs_cluster_name" {
-  description = "The name of the ECS cluster"
-  value       = module.ecs.cluster_name
-}
-
 output "ecs_cluster_id" {
-  description = "The ID of the ECS cluster"
-  value       = module.ecs.cluster_id
+  value = module.ecs.cluster_id
+}
+output "sns_topic_arn" {
+  value = module.sns.sns_topic_arn
+}
+output "athena_database_name" {
+  value = module.athena.athena_database_name
 }
 
-output "ecs_execution_role_arn" {
-  description = "The ARN of the ECS task execution role"
-  value       = module.ecs.ecs_execution_role_arn
-}
+# =====================
+# RDS Database Outputs
+# =====================
 
-# RDS Outputs
 output "rds_endpoint" {
-  description = "The connection endpoint for the RDS instance"
-  value       = module.rds.db_instance_endpoint
+  description = "RDS instance endpoint"
+  value       = module.rds.rds_endpoint
 }
 
-output "rds_database_name" {
-  description = "The name of the database"
-  value       = module.rds.db_instance_database_name
+output "rds_port" {
+  description = "RDS instance port"
+  value       = module.rds.rds_port
 }
 
-output "rds_username" {
-  description = "The master username for the RDS instance"
-  value       = module.rds.db_instance_username
+output "database_name" {
+  description = "Name of the database"
+  value       = module.rds.database_name
+}
+
+output "database_secrets_arn" {
+  description = "ARN of the Secrets Manager secret containing database credentials"
+  value       = module.rds.secrets_manager_secret_arn
+}
+
+output "database_connection_info" {
+  description = "Database connection information for applications"
+  value       = module.rds.connection_info
   sensitive   = true
 }
 
-output "rds_security_group_id" {
-  description = "The ID of the security group attached to the RDS instance"
-  value       = module.rds.db_security_group_id
+# =====================
+# RDS Standby Database Outputs
+# =====================
+
+output "rds_standby_endpoint" {
+  description = "RDS standby instance endpoint"
+  value       = module.rds_standby.rds_endpoint
 }
 
-# Common Outputs
-output "environment" {
-  description = "The environment name"
-  value       = var.environment
+output "rds_standby_port" {
+  description = "RDS standby instance port"
+  value       = module.rds_standby.rds_port
 }
 
-# ALB Outputs (to be uncommented when ALB module is implemented)
-# output "alb_dns_name" {
-#   description = "The DNS name of the load balancer"
-#   value       = module.alb.alb_dns_name
-# }
-# 
-# output "alb_zone_id" {
-#   description = "The zone ID of the load balancer"
-#   value       = module.alb.alb_zone_id
-# }
-# 
-# output "alb_https_listener_arn" {
-#   description = "The ARN of the HTTPS listener"
-#   value       = module.alb.https_listener_arn
-# }
+output "database_standby_secrets_arn" {
+  description = "ARN of the Secrets Manager secret containing standby database credentials"
+  value       = module.rds_standby.secrets_manager_secret_arn
+}
 
-# CloudFront Outputs (to be uncommented when CloudFront module is implemented)
-# output "cloudfront_distribution_id" {
-#   description = "The ID of the CloudFront distribution"
-#   value       = module.cloudfront.distribution_id
-# }
-# 
-# output "cloudfront_domain_name" {
-#   description = "The domain name of the CloudFront distribution"
-#   value       = module.cloudfront.domain_name
-# }
-
-# S3 Bucket Outputs (to be uncommented when S3 module is implemented)
-# output "s3_bucket_arn" {
-#   description = "The ARN of the S3 bucket"
-#   value       = module.s3.bucket_arn
-# }
-# 
-# output "s3_bucket_name" {
-#   description = "The name of the S3 bucket"
-#   value       = module.s3.bucket_name
-# }
+output "database_standby_connection_info" {
+  description = "Standby database connection information for applications"
+  value       = module.rds_standby.connection_info
+  sensitive   = true
+}

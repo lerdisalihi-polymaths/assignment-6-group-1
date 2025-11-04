@@ -1,32 +1,41 @@
-variable "environment" {
-  description = "Environment name (e.g., dev, staging, prod)"
+variable "name" {
+  description = "Name prefix for resources"
   type        = string
 }
 
-variable "vpc_cidr" {
-  description = "CIDR block for the VPC"
+variable "cidr_block" {
+  description = "VPC CIDR block"
   type        = string
-  default     = "10.0.0.0/16"
 }
 
-variable "public_subnet_cidrs" {
-  description = "List of public subnet CIDR blocks"
+variable "public_subnets" {
+  description = "List of public subnet CIDRs"
   type        = list(string)
-  default     = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
 }
 
-variable "private_subnet_cidrs" {
-  description = "List of private subnet CIDR blocks"
+variable "private_subnets" {
+  description = "List of private subnet CIDRs"
   type        = list(string)
-  default     = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
 }
 
-data "aws_availability_zones" "available" {
-  state = "available"
+variable "db_subnets" {
+  description = "List of database subnet CIDRs"
+  type        = list(string)
+}
+
+variable "azs" {
+  description = "List of availability zones"
+  type        = list(string)
+}
+
+variable "container_port" {
+  description = "Port on which the container application runs"
+  type        = number
+  default     = 3000
 }
 
 variable "tags" {
-  description = "A map of tags to add to all resources"
+  description = "Tags to apply to resources"
   type        = map(string)
   default     = {}
 }

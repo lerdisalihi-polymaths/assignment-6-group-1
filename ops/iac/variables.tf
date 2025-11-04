@@ -1,133 +1,278 @@
-# General
-variable "aws_region" {
-  description = "AWS region to deploy resources"
+# Optional: CloudFront aliases
+variable "aliases" {
+  description = "CloudFront distribution aliases"
+  type        = list(string)
+  default     = []
+}
+
+# Required: CloudFront distribution ID for CloudWatch
+variable "cloudfront_distribution_id" {
+  description = "CloudFront distribution ID for metrics"
   type        = string
-  default     = "us-east-1"
+  default     = "dev-cloudfront-dist-id"
+}
+
+# Required: Environment name for CloudWatch
+
+# Required: ALB name for CloudWatch
+# Optional: CloudFront comment
+variable "comment" {
+  description = "Comment for CloudFront distribution"
+  type        = string
+  default     = "Development CloudFront distribution"
+}
+
+# Optional: CloudFront price class
+variable "price_class" {
+  description = "Price class for CloudFront distribution"
+  type        = string
+  default     = "PriceClass_100"
+}
+# Optional: Enable warm standby (default false)
+variable "warm_standby" {
+  description = "Enable warm standby ALB/ECS"
+  type        = bool
+  default     = false
+}
+
+# Optional: Enable WAF (default false)
+variable "waf_enabled" {
+  description = "Enable WAF protection"
+  type        = bool
+  default     = false
+}
+
+# Required: SNS alert email
+variable "sns_alert_email" {
+  description = "Email address for SNS alerts"
+  type        = string
+  default     = "dev-alerts@example.com"
+}
+# CloudWatch dashboard and alarm variables
+variable "dashboard_body" {
+  description = "JSON body for CloudWatch dashboard"
+  type        = string
+  default     = "{}"
 }
 
 variable "environment" {
-  description = "Environment name (e.g., dev, staging, prod)"
+  description = "Environment name (e.g., dev, prod, staging)"
   type        = string
-  default     = "dev"
+  default     = "dev-placeholder"
 }
 
-variable "project_name" {
-  description = "Name of the project"
+variable "ecs_cpu_threshold" {
+  description = "CPU threshold for ECS CloudWatch alarm"
+  type        = number
+  default     = 80
+}
+# App secret for Secrets Manager
+variable "app_secret_string" {
+  description = "Secret string for application (example)"
   type        = string
-  default     = "assignment-6"
+  default     = "dev-placeholder"
+}
+variable "region" {
+  description = "AWS region"
+  type        = string
+}
+
+variable "tags" {
+  description = "Tags to apply to resources"
+  type        = map(string)
+  default     = {}
 }
 
 # VPC
-variable "vpc_cidr" {
-  description = "CIDR block for the VPC"
+variable "vpc_name" {
+  description = "Name prefix for VPC"
   type        = string
-  default     = "10.0.0.0/16"
+}
+variable "vpc_cidr_block" {
+  description = "VPC CIDR block"
+  type        = string
+}
+variable "public_subnets" {
+  description = "List of public subnet CIDRs"
+  type        = list(string)
+}
+variable "private_subnets" {
+  description = "List of private subnet CIDRs"
+  type        = list(string)
+}
+variable "db_subnets" {
+  description = "List of database subnet CIDRs"
+  type        = list(string)
+}
+variable "azs" {
+  description = "List of availability zones"
+  type        = list(string)
 }
 
-variable "public_subnet_cidrs" {
-  description = "List of public subnet CIDR blocks"
-  type        = list(string)
-  default     = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
+# S3
+variable "frontend_bucket_name" {
+  description = "Name for frontend S3 bucket"
+  type        = string
+}
+variable "alb_logs_bucket_name" {
+  description = "Name for ALB logs S3 bucket"
+  type        = string
+}
+variable "cloudfront_logs_bucket_name" {
+  description = "Name for CloudFront logs S3 bucket"
+  type        = string
 }
 
-variable "private_subnet_cidrs" {
-  description = "List of private subnet CIDR blocks"
-  type        = list(string)
-  default     = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
+# ALB
+variable "alb_name" {
+  description = "Name prefix for ALB"
+  type        = string
+}
+variable "target_port" {
+  description = "Target group port"
+  type        = number
+}
+variable "health_check_path" {
+  description = "Health check path"
+  type        = string
+}
+
+# Route 53 and ALB DNS variables for failover
+variable "route53_zone_id" {
+  description = "Route 53 Hosted Zone ID for API DNS name"
+  type        = string
+}
+
+variable "api_dns_name" {
+  description = "DNS name for the API (e.g., api.example.com)"
+  type        = string
+}
+
+variable "alb_zone_id" {
+  description = "ALB DNS zone ID (from AWS documentation for your region)"
+  type        = string
 }
 
 # ECS
-variable "ecs_instance_type" {
-  description = "EC2 instance type for ECS container instances"
+variable "ecs_name" {
+  description = "Name prefix for ECS"
   type        = string
-  default     = "t3.medium"
 }
-
-variable "ecs_min_size" {
-  description = "Minimum number of instances in the ECS auto scaling group"
-  type        = number
-  default     = 1
-}
-
-variable "ecs_max_size" {
-  description = "Maximum number of instances in the ECS auto scaling group"
-  type        = number
-  default     = 3
-}
-
-variable "ecs_desired_capacity" {
-  description = "Desired number of instances in the ECS auto scaling group"
-  type        = number
-  default     = 2
-}
-
-variable "enable_container_insights" {
-  description = "Enable CloudWatch Container Insights for the ECS cluster"
-  type        = bool
-  default     = true
-}
-
-variable "log_retention_in_days" {
-  description = "Number of days to retain CloudWatch logs"
-  type        = number
-  default     = 30
-}
-
-# RDS
-variable "db_engine" {
-  description = "Database engine type (e.g., postgres, mysql, etc.)"
+variable "container_name" {
+  description = "Container name"
   type        = string
-  default     = "postgres"
 }
-
-variable "db_engine_version" {
-  description = "Database engine version"
+variable "container_port" {
+  description = "Container port"
+  type        = number
+}
+variable "cpu" {
+  description = "CPU units"
   type        = string
-  default     = "14.4"
+}
+variable "memory" {
+  description = "Memory (MB)"
+  type        = string
+}
+variable "desired_count" {
+  description = "Number of ECS tasks"
+  type        = number
 }
 
-variable "db_instance_class" {
-  description = "The instance type of the RDS instance"
+# CloudFront
+
+# CloudWatch
+variable "log_retention_days" {
+  description = "Log retention in days"
+  type        = number
+}
+
+# SNS
+variable "sns_slack_webhook" {
+  description = "SNS Slack webhook URL"
+  type        = string
+}
+
+# Athena
+variable "athena_database_name" {
+  description = "Athena database name"
+  type        = string
+}
+variable "athena_workgroup_name" {
+  description = "Athena workgroup name"
+  type        = string
+}
+variable "athena_output_location" {
+  description = "Athena query output S3 location"
+  type        = string
+}
+
+# CI/CD Variables
+variable "github_owner" {
+  description = "GitHub repository owner"
+  type        = string
+}
+
+variable "github_repo" {
+  description = "GitHub repository name"
+  type        = string
+}
+
+variable "github_branch" {
+  description = "GitHub branch to build from"
+  type        = string
+  default     = "main"
+}
+
+variable "github_token" {
+  description = "GitHub OAuth token"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+# =====================
+# RDS Database Variables
+# =====================
+
+variable "rds_instance_class" {
+  description = "RDS instance class"
   type        = string
   default     = "db.t3.micro"
 }
 
-variable "db_allocated_storage" {
-  description = "The allocated storage in gigabytes"
+variable "rds_engine_version" {
+  description = "PostgreSQL engine version"
+  type        = string
+  default     = "15.7"
+}
+
+variable "rds_allocated_storage" {
+  description = "Initial allocated storage in GB"
   type        = number
   default     = 20
 }
 
-variable "db_name" {
-  description = "The name of the database to create when the DB instance is created"
-  type        = string
-  default     = "appdb"
-}
-
-variable "db_username" {
-  description = "Username for the master DB user"
-  type        = string
-  default     = "admin"
-}
-
-variable "db_password" {
-  description = "Password for the master DB user"
-  type        = string
-  sensitive   = true
-  default     = "changeme123" # In production, use a secure method like AWS Secrets Manager
-}
-
-variable "rds_monitoring_interval" {
-  description = "The interval, in seconds, between points when Enhanced Monitoring metrics are collected"
+variable "rds_max_allocated_storage" {
+  description = "Maximum allocated storage for autoscaling in GB"
   type        = number
-  default     = 60
+  default     = 100
 }
 
-# Tags
-locals {
-  common_tags = {
-    Environment = var.environment
-    Project     = var.project_name
-    Terraform   = "true"
-  }
+variable "rds_multi_az" {
+  description = "Enable Multi-AZ deployment for high availability"
+  type        = bool
+  default     = true
+}
+
+variable "rds_backup_retention_period" {
+  description = "Number of days to retain backups"
+  type        = number
+  default     = 7
+}
+
+variable "rds_deletion_protection" {
+  description = "Enable deletion protection"
+  type        = bool
+  default     = true
 }

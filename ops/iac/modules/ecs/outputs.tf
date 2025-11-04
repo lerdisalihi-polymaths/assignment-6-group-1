@@ -1,24 +1,19 @@
 output "cluster_id" {
-  description = "The ID of the ECS cluster"
-  value       = aws_ecs_cluster.main.id
+  description = "ECS Cluster ID"
+  value       = aws_ecs_cluster.this.id
 }
 
 output "cluster_name" {
-  description = "The name of the ECS cluster"
-  value       = aws_ecs_cluster.main.name
+  description = "ECS Cluster Name"
+  value       = aws_ecs_cluster.this.name
 }
 
-output "ecs_execution_role_arn" {
-  description = "The ARN of the ECS task execution role"
-  value       = aws_iam_role.ecs_execution_role.arn
+output "service_name" {
+  description = "ECS Service Name"
+  value       = aws_ecs_service.api.name
 }
 
-output "ecs_auto_scaling_group_name" {
-  description = "The name of the auto scaling group for ECS container instances"
-  value       = aws_autoscaling_group.ecs_nodes.name
-}
-
-output "ecs_instance_profile_name" {
-  description = "The name of the IAM instance profile for ECS container instances"
-  value       = aws_iam_instance_profile.ecs_instance_profile.name
+output "task_definition_arn" {
+  description = "ECS Task Definition ARN"
+  value       = aws_ecs_task_definition.api.arn
 }
