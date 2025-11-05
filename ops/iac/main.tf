@@ -189,7 +189,6 @@ module "cloudfront" {
   alb_domain_name         = module.alb.alb_dns_name
   logs_bucket_domain_name = module.s3.cloudfront_logs_bucket_domain_name
   web_acl_arn             = module.waf.cloudfront_web_acl_arn
-  waf_enabled             = true
   tags                    = var.tags
 }
 

@@ -1,0 +1,85 @@
+version: 0.2
+
+env:
+  variables:
+    TF_VERSION: "1.6.0"
+    TF_IN_AUTOMATION: "true"
+    TF_INPUT: "false"
+    TF_WORKSPACE: "dev"
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 18
+    commands:
+      - echo Installing Terraform...
+      - wget https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_linux_amd64.zip
+      - unzip terraform_${TF_VERSION}_linux_amd64.zip
+      - mv terraform /usr/local/bin/
+      - terraform version
+      - echo Installing additional tools...
+      - pip3 install awscli --upgrade
+
+  pre_build:
+    commands:
+      - echo Starting Terraform operations...
+      - echo "Initial working directory:"
+      - pwd
+      - echo "Directory structure:"
+      - ls -la
+      - echo "Checking for config directory:"
+      - ls -la ../config/dev/ || echo "Config directory not found at ../config/dev/"
+      - echo Initializing Terraform...
+      - terraform init -backend=false
+      - echo Formatting and validating Terraform...
+      - terraform fmt -check -recursive
+      - terraform validate
+      - echo Running security scan with tfsec...
+      - wget -O tfsec https://github.com/aquasecurity/tfsec/releases/latest/download/tfsec-linux-amd64
+      - chmod +x tfsec
+      - ./tfsec --format json --out tfsec-results.json . || true
+      - echo Setting up Terraform backend...
+      - terraform init -backend-config="bucket=$TF_BACKEND_BUCKET" -backend-config="key=$TF_BACKEND_KEY" -backend-config="region=us-east-1"
+
+  build:
+    commands:
+      - echo Creating and applying Terraform plan...
+      - echo "Current working directory:"
+      - pwd
+      - echo "Directory structure from terraform context:"
+      - ls -la ../config/dev/
+      - echo "Creating terraform.tfvars from template..."
+      - cp ../config/dev/terraform.tfvars.template ../config/dev/terraform.tfvars
+      - echo "Setting secrets from environment variables..."
+      - echo 'github_token = "'$GITHUB_TOKEN'"' >> ../config/dev/terraform.tfvars
+      - echo 'sns_slack_webhook = "'$SNS_SLACK_WEBHOOK'"' >> ../config/dev/terraform.tfvars  
+      - echo 'sns_alert_email = "'$SNS_ALERT_EMAIL'"' >> ../config/dev/terraform.tfvars
+      - echo 'app_secret_string = "'$APP_SECRET_STRING'"' >> ../config/dev/terraform.tfvars
+      - echo "Checking final terraform.tfvars:"
+      - ls -la ../config/dev/terraform.tfvars
+      - echo "Running terraform plan..."
+      - terraform plan -detailed-exitcode -out=tfplan -var-file="../config/dev/terraform.tfvars"
+      - terraform show -json tfplan > tfplan.json
+      - echo Applying Terraform changes...
+      - terraform apply -auto-approve tfplan
+      - echo Terraform apply completed successfully
+      - terraform output -json > terraform-outputs.json
+
+  post_build:
+    commands:
+      - echo "Terraform operations completed on $(date)"
+      - echo "Infrastructure deployment summary:"
+      - terraform output
+      - echo Cleaning up temporary files...
+      - rm -f tfplan
+
+artifacts:
+  files:
+    - terraform-outputs.json
+    - tfplan.json
+    - tfsec-results.json
+  name: terraform-artifacts
+
+cache:
+  paths:
+    - '/root/.terraform.d/plugin-cache/**/*'
