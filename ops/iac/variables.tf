@@ -36,10 +36,29 @@ variable "warm_standby" {
 }
 
 # Optional: Enable WAF (default false)
+# WAF Configuration
 variable "waf_enabled" {
   description = "Enable WAF protection"
   type        = bool
-  default     = false
+  default     = true
+}
+
+variable "waf_blacklisted_ips" {
+  description = "List of IP addresses to blacklist in WAF"
+  type        = list(string)
+  default     = []
+}
+
+variable "waf_rate_limit" {
+  description = "The maximum number of requests allowed from a single IP address in a 5-minute period"
+  type        = number
+  default     = 2000
+}
+
+variable "waf_allowed_countries" {
+  description = "List of allowed country codes for WAF geo-restriction"
+  type        = list(string)
+  default     = ["US", "CA", "GB", "DE"]
 }
 
 # Required: SNS alert email
