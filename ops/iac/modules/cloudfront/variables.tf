@@ -44,9 +44,15 @@ variable "logs_prefix" {
 }
 
 variable "web_acl_arn" {
-  description = "ARN of the WAF Web ACL to associate with CloudFront"
+  description = "The ARN of the WAF WebACL to associate with the CloudFront distribution"
   type        = string
   default     = ""
+}
+
+variable "waf_enabled" {
+  description = "Whether to enable WAF protection for CloudFront"
+  type        = bool
+  default     = true
 }
 
 variable "tags" {

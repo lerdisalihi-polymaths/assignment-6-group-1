@@ -171,12 +171,25 @@ module "ecs_standby" {
 #   tags                 = var.tags
 # }
 
+# WAF Module
+module "waf" {
+  source               = "./modules/waf"
+  environment          = var.environment
+  alb_arn              = module.alb.alb_arn
+  enable_alb_protection = true
+  blacklisted_ips      = var.waf_blacklisted_ips
+  rate_limit           = var.waf_rate_limit
+  allowed_countries    = var.waf_allowed_countries
+  tags                 = merge(var.tags, { Name = "${var.environment}-waf" })
+}
+
 module "cloudfront" {
   source                  = "./modules/cloudfront"
   s3_domain_name          = module.s3.frontend_bucket_domain_name
   alb_domain_name         = module.alb.alb_dns_name
   logs_bucket_domain_name = module.s3.cloudfront_logs_bucket_domain_name
-  # web_acl_id              = aws_wafv2_web_acl.cloudfront.arn
+  web_acl_arn             = module.waf.cloudfront_web_acl_arn
+  waf_enabled             = true
   tags                    = var.tags
 }
 
@@ -220,6 +233,47 @@ module "athena" {
   alb_logs_s3_location        = "s3://${module.s3.alb_logs_bucket_name}/alb-logs/AWSLogs/${data.aws_caller_identity.current.account_id}/elasticloadbalancing/${var.region}/"
   cloudfront_logs_s3_location = "s3://${module.s3.alb_logs_bucket_name}/cloudfront-logs/"
   tags                        = var.tags
+}
+
+# S3 bucket for AWS Config
+resource "aws_s3_bucket" "config_bucket" {
+  bucket = "${var.environment}-aws-config-bucket-${data.aws_caller_identity.current.account_id}"
+  
+  lifecycle {
+    prevent_destroy = true
+  }
+
+  tags = merge(
+    var.tags,
+    {
+      Name = "${var.environment}-aws-config-bucket"
+    }
+  )
+}
+
+resource "aws_s3_bucket_versioning" "config_bucket" {
+  bucket = aws_s3_bucket.config_bucket.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+# Security module
+module "security" {
+  source             = "./modules/security"
+  vpc_id             = module.vpc.vpc_id
+  environment        = var.environment
+  config_s3_bucket   = aws_s3_bucket.config_bucket.id
+  sns_topic_arn      = module.sns.sns_topic_arn  # Using the existing SNS module
+  log_retention_days = 90
+  
+  tags = merge(
+    var.tags,
+    {
+      Environment = var.environment
+      Project     = "AWS Infrastructure"
+    }
+  )
 }
 
 # module "monitoring_alarms" {
