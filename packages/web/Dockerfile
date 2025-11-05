@@ -1,16 +1,12 @@
-FROM python:3.11-slim
+FROM nginx:alpine
 
-WORKDIR /app
+# Copy static files to nginx html directory
+COPY src/ /usr/share/nginx/html/
 
-# Install dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy application files
-COPY . .
+# Copy nginx configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose port
 EXPOSE 80
 
-# Run with gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:80", "--workers", "2", "server:app"]
+# Nginx runs automatically with the base image CMD
