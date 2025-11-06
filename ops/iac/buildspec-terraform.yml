@@ -27,8 +27,6 @@ phases:
       - pwd
       - echo "Directory structure:"
       - ls -la
-      - echo "Checking for config directory:"
-      - ls -la ../config/dev/ || echo "Config directory not found at ../config/dev/"
       - echo Initializing Terraform...
       - terraform init -backend=false
       - echo Formatting and validating Terraform...
@@ -46,19 +44,19 @@ phases:
       - echo Creating and applying Terraform plan...
       - echo "Current working directory:"
       - pwd
-      - echo "Directory structure from terraform context:"
-      - ls -la ../config/dev/
-      - echo "Creating terraform.tfvars from template..."
-      - cp ../config/dev/terraform.tfvars.template ../config/dev/terraform.tfvars
-      - echo "Setting secrets from environment variables..."
-      - echo 'github_token = "'$GITHUB_TOKEN'"' >> ../config/dev/terraform.tfvars
-      - echo 'sns_slack_webhook = "'$SNS_SLACK_WEBHOOK'"' >> ../config/dev/terraform.tfvars  
-      - echo 'sns_alert_email = "'$SNS_ALERT_EMAIL'"' >> ../config/dev/terraform.tfvars
-      - echo 'app_secret_string = "'$APP_SECRET_STRING'"' >> ../config/dev/terraform.tfvars
-      - echo "Checking final terraform.tfvars:"
-      - ls -la ../config/dev/terraform.tfvars
+      - echo "Directory structure:"
+      - ls -la
+      - echo "Updating terraform.tfvars with secrets from environment variables..."
+      - |
+        # Backup original tfvars
+        cp terraform.tfvars terraform.tfvars.backup
+        # Add secrets to terraform.tfvars
+        echo 'github_token = "'$GITHUB_TOKEN'"' >> terraform.tfvars
+        echo 'sns_slack_webhook = "'$SNS_SLACK_WEBHOOK'"' >> terraform.tfvars  
+        echo 'sns_alert_email = "'$SNS_ALERT_EMAIL'"' >> terraform.tfvars
+        echo 'app_secret_string = "'$APP_SECRET_STRING'"' >> terraform.tfvars
       - echo "Running terraform plan..."
-      - terraform plan -detailed-exitcode -out=tfplan -var-file="../config/dev/terraform.tfvars"
+      - terraform plan -detailed-exitcode -out=tfplan -var-file="terraform.tfvars"
       - terraform show -json tfplan > tfplan.json
       - echo Applying Terraform changes...
       - terraform apply -auto-approve tfplan
