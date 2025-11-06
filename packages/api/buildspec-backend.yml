@@ -9,7 +9,6 @@ phases:
   install:
     runtime-versions:
       python: 3.11
-      docker: 20
     commands:
       - |
         echo Installing backend dependencies...
