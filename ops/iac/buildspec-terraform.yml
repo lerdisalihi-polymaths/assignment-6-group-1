@@ -27,6 +27,10 @@ phases:
       - pwd
       - echo "Directory structure:"
       - ls -la
+      - echo "Changing to ops/iac directory..."
+      - cd ops/iac
+      - pwd
+      - ls -la
       - echo Initializing Terraform...
       - terraform init -backend=false
       - echo Formatting and validating Terraform...
@@ -42,6 +46,7 @@ phases:
   build:
     commands:
       - echo Creating and applying Terraform plan...
+      - cd ops/iac
       - echo "Current working directory:"
       - pwd
       - echo "Directory structure:"
@@ -65,6 +70,7 @@ phases:
 
   post_build:
     commands:
+      - cd ops/iac
       - echo "Terraform operations completed on $(date)"
       - echo "Infrastructure deployment summary:"
       - terraform output
@@ -73,9 +79,9 @@ phases:
 
 artifacts:
   files:
-    - terraform-outputs.json
-    - tfplan.json
-    - tfsec-results.json
+    - ops/iac/terraform-outputs.json
+    - ops/iac/tfplan.json
+    - ops/iac/tfsec-results.json
   name: terraform-artifacts
 
 cache:
