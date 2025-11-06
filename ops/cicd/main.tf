@@ -172,12 +172,12 @@ resource "aws_codebuild_project" "backend" {
 
     environment_variable {
       name  = "ECS_EXECUTION_ROLE_ARN"
-      value = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.ecs_service_name}-ecs-task-execution"
+      value = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.ecs_cluster_name}-ecs-task-execution"
     }
 
     environment_variable {
       name  = "ECS_TASK_ROLE_ARN"
-      value = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.ecs_service_name}-ecs-task-role"
+      value = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.ecs_cluster_name}-ecs-task-execution"
     }
 
     environment_variable {
