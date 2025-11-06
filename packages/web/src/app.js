@@ -1,10 +1,8 @@
 // API configuration
-// Use environment variable or default to same-origin /api endpoint
-const API_URL = window.API_URL || (
-    window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-        ? 'http://localhost:5000/api'
-        : `${window.location.protocol}//${window.location.hostname}/api`
-);
+// Hardcoded to ALB endpoint for production, localhost for development
+const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:5000/api'
+    : 'http://task-alb-dev123141241-1337149599.us-east-1.elb.amazonaws.com/api';
 
 let currentFilter = 'all';
 
