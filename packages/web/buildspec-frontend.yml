@@ -9,20 +9,26 @@ phases:
     runtime-versions:
       nodejs: 20
     commands:
-      - echo Installing frontend dependencies...
-      - echo "Working directory at start:"
-      - pwd
-      - echo "Directory structure:"
-      - ls -la
-      - echo "Installing Node.js dependencies..."
-      - npm install
-      - echo "Checking installed packages:"
-      - npm list --depth=0
+      - |
+        echo Installing frontend dependencies...
+        echo "Working directory at start:"
+        pwd
+        echo "Directory structure:"
+        ls -la
+        echo "Navigating to packages/web..."
+        cd packages/web
+        pwd
+        ls -la
+        echo "Installing Node.js dependencies..."
+        npm install
+        echo "Checking installed packages:"
+        npm list --depth=0
 
   pre_build:
     commands:
       - |
         echo Starting frontend pre-build checks...
+        cd packages/web
         echo "Current working directory:"
         pwd
         echo "Checking web directory structure:"
@@ -43,6 +49,7 @@ phases:
     commands:
       - |
         set -e
+        cd packages/web
         echo "=== Starting S3 Sync ==="
         echo "FRONTEND_BUCKET: $FRONTEND_BUCKET"
         echo "CLOUDFRONT_DIST_ID: $CLOUDFRONT_DIST_ID"
@@ -104,6 +111,7 @@ phases:
   post_build:
     commands:
       - |
+        cd packages/web
         echo "Frontend deployment completed on $(date)"
         echo Verifying deployment...
         sleep 30
@@ -117,23 +125,23 @@ phases:
 
 artifacts:
   files:
-    - src/*.html
-    - src/*.css
-    - src/*.js
+    - packages/web/src/*.html
+    - packages/web/src/*.css
+    - packages/web/src/*.js
   name: frontend-artifacts
   secondary-artifacts:
     coverage:
       files:
-        - coverage/**/*
+        - packages/web/coverage/**/*
       name: frontend-coverage-report
 
 reports:
   jest-reports:
     files:
-      - coverage/lcov.info
+      - packages/web/coverage/lcov.info
     file-format: 'CLOVERXML'
 
 cache:
   paths:
-    - node_modules/**/*
+    - packages/web/node_modules/**/*
 
