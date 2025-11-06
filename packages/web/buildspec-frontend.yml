@@ -49,7 +49,18 @@ phases:
     commands:
       - |
         set -e
-        cd packages/web
+        echo "=== Debug: Starting directory ==="
+        pwd
+        echo "=== Debug: Listing current directory ==="
+        ls -la
+        echo "=== Debug: Checking for packages directory ==="
+        ls -la packages/ || echo "packages/ does not exist"
+        echo "=== Debug: Checking for web directory ==="
+        ls -la web/ || echo "web/ does not exist"
+        echo "=== Debug: Checking for packages/web directory ==="
+        ls -la packages/web/ || echo "packages/web/ does not exist"
+        echo "=== Changing to packages/web ==="
+        cd packages/web || { echo "Failed to cd to packages/web"; exit 1; }
         echo "=== Starting S3 Sync ==="
         echo "FRONTEND_BUCKET: $FRONTEND_BUCKET"
         echo "CLOUDFRONT_DIST_ID: $CLOUDFRONT_DIST_ID"
