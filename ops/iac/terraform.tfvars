@@ -38,7 +38,7 @@ cloudfront_logs_bucket_name = "group1-cf-logs-dev123141241"  # S3 bucket for Clo
 # =====================
 ecs_name       = "task-api-dev123141241" # ECS cluster/service name
 container_name = "api"                   # ECS container name
-container_port = 5000                    # Container port (matches Flask default)
+container_port = 3000                    # Container port (matches Dockerfile EXPOSE)
 cpu            = "256"                   # Fargate CPU units (dev: 256)
 memory         = "512"                   # Fargate memory (dev: 512MB)
 desired_count  = 1                       # Number of ECS tasks
