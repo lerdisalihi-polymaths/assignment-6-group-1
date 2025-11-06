@@ -142,19 +142,19 @@ phases:
           --service $ECS_SERVICE_NAME \
           --task-definition $ECS_TASK_FAMILY \
           --force-new-deployment
-      - echo Waiting for service to become stable...
       - |
+        echo Waiting for service to become stable...
         aws ecs wait services-stable \
           --cluster $ECS_CLUSTER_NAME \
           --services $ECS_SERVICE_NAME || echo "Service stabilization check timed out, but deployment initiated"
-      - echo "Deployment completed successfully"
-      - echo "Checking service status..."
-      - aws ecs describe-services --cluster $ECS_CLUSTER_NAME --services $ECS_SERVICE_NAME
-      - echo "Getting ALB endpoint..."
-      - echo "Backend API endpoint: http://$ALB_DNS_NAME"
-      - echo "Testing health endpoint..."
-      - sleep 30
-      - curl -f http://$ALB_DNS_NAME/health || echo "Health check pending - service may still be starting"
+        echo "Deployment completed successfully"
+        echo "Checking service status..."
+        aws ecs describe-services --cluster $ECS_CLUSTER_NAME --services $ECS_SERVICE_NAME || echo "Failed to describe service"
+        echo "Getting ALB endpoint..."
+        echo "Backend API endpoint: http://$ALB_DNS_NAME"
+        echo "Testing health endpoint..."
+        sleep 30
+        curl -f http://$ALB_DNS_NAME/health || echo "Health check pending - service may still be starting"
 
 artifacts:
   files:
