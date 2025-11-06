@@ -51,14 +51,19 @@ phases:
         set -e
         echo "=== Debug: Starting directory ==="
         pwd
+        echo "CODEBUILD_SRC_DIR: $CODEBUILD_SRC_DIR"
         echo "=== Debug: Listing current directory ==="
         ls -la
+        echo "=== Debug: Listing CODEBUILD_SRC_DIR ==="
+        ls -la $CODEBUILD_SRC_DIR || echo "CODEBUILD_SRC_DIR does not exist"
         echo "=== Debug: Checking for packages directory ==="
         ls -la packages/ || echo "packages/ does not exist"
         echo "=== Debug: Checking for web directory ==="
         ls -la web/ || echo "web/ does not exist"
         echo "=== Debug: Checking for packages/web directory ==="
         ls -la packages/web/ || echo "packages/web/ does not exist"
+        echo "=== Debug: Checking for src directory in current location ==="
+        ls -la src/ || echo "src/ does not exist in current directory"
         echo "=== Changing to packages/web ==="
         cd packages/web || { echo "Failed to cd to packages/web"; exit 1; }
         echo "=== Starting S3 Sync ==="
