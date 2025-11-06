@@ -13,8 +13,8 @@ resource "aws_cloudfront_distribution" "this" {
   aliases             = var.aliases
   price_class         = var.price_class
   # Web ACL for WAF (optional)
-  web_acl_id          = var.web_acl_arn
-  http_version        = "http2"
+  web_acl_id   = var.web_acl_arn
+  http_version = "http2"
 
   # Default cache behavior for S3 frontend
   default_cache_behavior {

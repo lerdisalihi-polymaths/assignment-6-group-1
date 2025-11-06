@@ -2,9 +2,9 @@
 # GitHub Configuration
 # =====================
 # Update these with your GitHub information
-github_owner  = "lerdisalihi-polymaths"     # Your GitHub username
-github_repo   = "assignment-6-group-1"     # Your repository name
-github_branch = "main"                      # Branch to build from
+github_owner  = "lerdisalihi-polymaths" # Your GitHub username
+github_repo   = "assignment-6-group-1"  # Your repository name
+github_branch = "main"                  # Branch to build from
 
 # Note: Using AWS CodeStar Connections - no GitHub token needed!
 # After 'terraform apply', you'll need to authorize the connection in AWS Console

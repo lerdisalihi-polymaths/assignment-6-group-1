@@ -4,14 +4,10 @@
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
-# CodeStar Connection for GitHub
-resource "aws_codestarconnections_connection" "github" {
-  name          = "github-connection-${random_string.suffix.result}"
-  provider_type = "GitHub"
-  
-  tags = merge(var.tags, {
-    Name = "GitHub CodeStar Connection"
-  })
+# Use existing CodeStar Connection for GitHub (AVAILABLE)
+# User specified connection
+locals {
+  github_connection_arn = "arn:aws:codeconnections:us-east-1:264765155009:connection/b824b735-4a6e-4881-ad89-3a7879f77536"
 }
 
 # S3 bucket for pipeline artifacts
@@ -210,9 +206,9 @@ resource "aws_codepipeline" "terraform" {
       output_artifacts = ["terraform_source"]
 
       configuration = {
-        ConnectionArn    = aws_codestarconnections_connection.github.arn
-        FullRepositoryId = "${var.github_owner}/${var.github_repo}"
-        BranchName       = var.github_branch
+        ConnectionArn        = local.github_connection_arn
+        FullRepositoryId     = "${var.github_owner}/${var.github_repo}"
+        BranchName           = var.github_branch
         OutputArtifactFormat = "CODE_ZIP"
       }
     }
@@ -290,9 +286,9 @@ resource "aws_codepipeline" "frontend" {
       output_artifacts = ["frontend_source"]
 
       configuration = {
-        ConnectionArn    = aws_codestarconnections_connection.github.arn
-        FullRepositoryId = "${var.github_owner}/${var.github_repo}"
-        BranchName       = var.github_branch
+        ConnectionArn        = local.github_connection_arn
+        FullRepositoryId     = "${var.github_owner}/${var.github_repo}"
+        BranchName           = var.github_branch
         OutputArtifactFormat = "CODE_ZIP"
       }
     }
@@ -341,9 +337,9 @@ resource "aws_codepipeline" "backend" {
       output_artifacts = ["backend_source"]
 
       configuration = {
-        ConnectionArn    = aws_codestarconnections_connection.github.arn
-        FullRepositoryId = "${var.github_owner}/${var.github_repo}"
-        BranchName       = var.github_branch
+        ConnectionArn        = local.github_connection_arn
+        FullRepositoryId     = "${var.github_owner}/${var.github_repo}"
+        BranchName           = var.github_branch
         OutputArtifactFormat = "CODE_ZIP"
       }
     }

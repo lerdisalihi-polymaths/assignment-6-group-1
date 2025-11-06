@@ -19,7 +19,7 @@ tags = {                  # Common resource tags
 # =====================
 # Networking (VPC)
 # =====================
-vpc_name        = "insfrastructure-vpc-dev"            # VPC name
+vpc_name        = "insfrastructure-vpc-dev"          # VPC name
 vpc_cidr_block  = "10.1.0.0/16"                      # VPC CIDR block
 public_subnets  = ["10.1.1.0/24", "10.1.2.0/24"]     # Public subnets
 private_subnets = ["10.1.101.0/24", "10.1.102.0/24"] # Private subnets
@@ -36,12 +36,12 @@ cloudfront_logs_bucket_name = "group1-cf-logs-dev123141241"  # S3 bucket for Clo
 # =====================
 # ECS (Backend API)
 # =====================
-ecs_name       = "task-api-dev123141241"      # ECS cluster/service name
-container_name = "api"               # ECS container name
-container_port = 3000                # Container port (matches Dockerfile EXPOSE)
-cpu            = "256"               # Fargate CPU units (dev: 256)
-memory         = "512"               # Fargate memory (dev: 512MB)
-desired_count  = 1                   # Number of ECS tasks
+ecs_name       = "task-api-dev123141241" # ECS cluster/service name
+container_name = "api"                   # ECS container name
+container_port = 3000                    # Container port (matches Dockerfile EXPOSE)
+cpu            = "256"                   # Fargate CPU units (dev: 256)
+memory         = "512"                   # Fargate memory (dev: 512MB)
+desired_count  = 1                       # Number of ECS tasks
 # ECS container definition JSON
 # ECS container definition - Now managed by template
 # See container-definition.json.tpl for the actual definition
@@ -49,9 +49,9 @@ desired_count  = 1                   # Number of ECS tasks
 # =====================
 # Load Balancer (ALB)
 # =====================
-alb_name          = "task-alb-dev123141241"      # ALB name
-target_port       = 3000                # Target group port
-health_check_path = "/health"           # Health check path
+alb_name          = "task-alb-dev123141241" # ALB name
+target_port       = 3000                    # Target group port
+health_check_path = "/health"               # Health check path
 
 # =====================
 # CloudFront
@@ -65,7 +65,7 @@ price_class = "PriceClass_100" # Lowest cost
 # =====================
 log_retention_days = 7 # Log retention (days)
 # CloudWatch dashboard JSON
-dashboard_body = <<DASHBOARD
+dashboard_body    = <<DASHBOARD
 {
     "widgets": [
         {
@@ -221,9 +221,9 @@ ecs_cpu_threshold = 80 # CPU alarm threshold (%)
 # =====================
 # Athena (Log Analysis)
 # =====================
-athena_database_name   = "access_logs_dev123141241"                          # Athena DB name
-athena_workgroup_name  = "logs_workgroup_dev123141241"                       # Athena workgroup
-athena_output_location = "s3://athena-results-dev/"                 # Athena output S3 bucket URI (ensure this bucket exists)
+athena_database_name   = "access_logs_dev123141241"    # Athena DB name
+athena_workgroup_name  = "logs_workgroup_dev123141241" # Athena workgroup
+athena_output_location = "s3://athena-results-dev/"    # Athena output S3 bucket URI (ensure this bucket exists)
 
 # =====================
 # WAF and Reliability

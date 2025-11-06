@@ -34,7 +34,7 @@ data "aws_iam_policy_document" "kms_key_policy" {
     actions   = ["kms:*"]
     resources = ["*"]
   }
-  
+
   # Allow CloudWatch Logs to use the key
   statement {
     effect = "Allow"

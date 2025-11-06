@@ -12,7 +12,7 @@ locals {
       cpu       = tonumber(var.cpu)
       memory    = tonumber(var.memory)
       essential = true
-      
+
       portMappings = [
         {
           containerPort = var.container_port
@@ -20,7 +20,7 @@ locals {
           protocol      = "tcp"
         }
       ]
-      
+
       environment = [
         {
           name  = "ENVIRONMENT"
@@ -55,14 +55,14 @@ locals {
           value = var.ecs_name
         }
       ]
-      
+
       secrets = [
         {
           name      = "DB_PASSWORD"
           valueFrom = "${module.rds.secrets_manager_secret_arn}:password::"
         }
       ]
-      
+
       logConfiguration = {
         logDriver = "awslogs"
         options = {
@@ -73,7 +73,7 @@ locals {
       }
     }
   ])
-  
+
   container_definition_standby = jsonencode([
     {
       name      = var.container_name
@@ -81,7 +81,7 @@ locals {
       cpu       = tonumber(var.cpu)
       memory    = tonumber(var.memory)
       essential = true
-      
+
       portMappings = [
         {
           containerPort = var.container_port
@@ -89,7 +89,7 @@ locals {
           protocol      = "tcp"
         }
       ]
-      
+
       environment = [
         {
           name  = "ENVIRONMENT"
@@ -124,14 +124,14 @@ locals {
           value = "${var.ecs_name}-standby"
         }
       ]
-      
+
       secrets = [
         {
           name      = "DB_PASSWORD"
           valueFrom = "${module.rds_standby.secrets_manager_secret_arn}:password::"
         }
       ]
-      
+
       logConfiguration = {
         logDriver = "awslogs"
         options = {

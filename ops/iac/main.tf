@@ -187,7 +187,7 @@ module "waf" {
   rate_limit            = var.waf_rate_limit
   allowed_countries     = var.waf_allowed_countries
   tags                  = merge(var.tags, { Name = "${var.environment}-waf" })
-  
+
   providers = {
     aws.us_east_1 = aws.us_east_1
   }
@@ -247,7 +247,7 @@ module "athena" {
 # S3 bucket for AWS Config
 resource "aws_s3_bucket" "config_bucket" {
   bucket = "${var.environment}-aws-config-bucket-${data.aws_caller_identity.current.account_id}"
-  
+
   lifecycle {
     prevent_destroy = true
   }
@@ -273,9 +273,9 @@ module "security" {
   vpc_id             = module.vpc.vpc_id
   environment        = var.environment
   config_s3_bucket   = aws_s3_bucket.config_bucket.id
-  sns_topic_arn      = module.sns.sns_topic_arn  # Using the existing SNS module
+  sns_topic_arn      = module.sns.sns_topic_arn # Using the existing SNS module
   log_retention_days = 90
-  
+
   tags = merge(
     var.tags,
     {
