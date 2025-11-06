@@ -48,47 +48,63 @@ phases:
   build:
     commands:
       - |
-        echo Syncing frontend assets to S3...
-        echo "Preparing static files for S3 deployment..."
+        set -e
+        echo "=== Starting S3 Sync ==="
+        echo "FRONTEND_BUCKET: $FRONTEND_BUCKET"
+        echo "CLOUDFRONT_DIST_ID: $CLOUDFRONT_DIST_ID"
+        echo "Checking for packages/web/src directory..."
         if [ -d "packages/web/src" ]; then
-          echo "Found packages/web/src directory, syncing static files to S3..."
-          # Sync HTML files with no cache
+          echo "✓ Found packages/web/src directory"
+          echo "Contents:"
+          ls -la packages/web/src/
+          
+          echo "=== Syncing HTML files ==="
           aws s3 sync ./packages/web/src s3://$FRONTEND_BUCKET \
             --exclude "*" \
             --include "*.html" \
             --delete \
             --cache-control "no-cache, no-store, must-revalidate" \
-            --content-type "text/html"
+            --content-type "text/html" || { echo "HTML sync failed"; exit 1; }
           
-          # Sync CSS files with long cache
+          echo "=== Syncing CSS files ==="
           aws s3 sync ./packages/web/src s3://$FRONTEND_BUCKET \
             --exclude "*" \
             --include "*.css" \
             --cache-control "public, max-age=31536000" \
-            --content-type "text/css"
+            --content-type "text/css" || { echo "CSS sync failed"; exit 1; }
           
-          # Sync JS files with long cache
+          echo "=== Syncing JS files ==="
           aws s3 sync ./packages/web/src s3://$FRONTEND_BUCKET \
             --exclude "*" \
             --include "*.js" \
             --cache-control "public, max-age=31536000" \
-            --content-type "application/javascript"
+            --content-type "application/javascript" || { echo "JS sync failed"; exit 1; }
           
-          # Sync other static assets (images, fonts, icons, etc.)
+          echo "=== Syncing other assets ==="
           aws s3 sync ./packages/web/src s3://$FRONTEND_BUCKET \
             --exclude "*.html" \
             --exclude "*.css" \
             --exclude "*.js" \
-            --cache-control "public, max-age=31536000"
+            --cache-control "public, max-age=31536000" || { echo "Assets sync failed"; exit 1; }
           
-          echo "S3 sync completed successfully"
+          echo "✓ S3 sync completed successfully"
         else
-          echo "ERROR: packages/web/src directory not found!"
+          echo "✗ ERROR: packages/web/src directory not found!"
+          pwd
+          ls -la packages/
           exit 1
         fi
-        echo Creating CloudFront invalidation...
-        INVALIDATION_ID=$(aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DIST_ID --paths "/*" --query 'Invalidation.Id' --output text) || echo "CloudFront invalidation failed - rate limited, but S3 sync was successful"
-        echo "CloudFront invalidation ID: $INVALIDATION_ID"
+        
+        echo "=== Creating CloudFront invalidation ==="
+        set +e
+        INVALIDATION_ID=$(aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DIST_ID --paths "/*" --query 'Invalidation.Id' --output text 2>&1)
+        if [ $? -eq 0 ]; then
+          echo "✓ CloudFront invalidation ID: $INVALIDATION_ID"
+        else
+          echo "⚠ CloudFront invalidation failed (might be rate limited): $INVALIDATION_ID"
+          echo "S3 sync was successful, CloudFront will update eventually"
+        fi
+        set -e
 
   post_build:
     commands:
