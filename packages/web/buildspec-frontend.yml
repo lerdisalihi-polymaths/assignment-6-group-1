@@ -3,12 +3,10 @@ version: 0.2
 env:
   variables:
     NODE_ENV: "production"
-    PYTHON_ENV: "production"
 
 phases:
   install:
     runtime-versions:
-      python: 3.11
       nodejs: 20
     commands:
       - echo Installing frontend dependencies...
@@ -21,16 +19,11 @@ phases:
       - pwd
       - echo "Contents of packages directory:"
       - ls -la
-      - echo "Installing Python dependencies..."
-      - pip install --upgrade pip
-      - pip install -r web/requirements.txt
-      - pip install pylint flake8
-      - echo "Installing Node.js dependencies for testing..."
+      - echo "Installing Node.js dependencies..."
       - cd web
       - npm install
       - echo "Checking installed packages:"
       - npm list --depth=0
-      - pip list
       - cd ..
 
   pre_build:
@@ -43,11 +36,6 @@ phases:
       - ls -la
       - echo "Checking src and tests directories:"
       - ls -la src/ tests/
-      - echo Running Python code quality checks...
-      - echo "Running Pylint on server.py..."
-      - python -m pylint server.py --exit-zero || echo "Pylint check completed with warnings"
-      - echo "Running Flake8..."
-      - python -m flake8 server.py --max-line-length=120 --exit-zero || echo "Flake8 check completed"
       - echo Running JavaScript tests with Jest...
       - echo "Starting Jest test execution..."
       - npm test -- --coverage --ci || echo "Some tests may have failed, continuing build..."
@@ -56,8 +44,6 @@ phases:
       - echo Validating static files...
       - echo "Checking for required files..."
       - ls -la src/index.html src/styles.css src/app.js
-      - echo "Verifying Flask application..."
-      - python -c "import server; print('Flask app validated successfully')" || echo "Flask validation skipped"
       - echo "Frontend files ready for deployment"
       - cd ..
 
