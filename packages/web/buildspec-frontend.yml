@@ -14,48 +14,46 @@ phases:
       - pwd
       - echo "Directory structure:"
       - ls -la
-      - echo "Navigating to packages directory for deployment:"
-      - cd ..
+      - echo "Navigating to packages/web directory:"
+      - cd packages/web
       - pwd
-      - echo "Contents of packages directory:"
+      - echo "Contents of web directory:"
       - ls -la
       - echo "Installing Node.js dependencies..."
-      - cd web
       - npm install
       - echo "Checking installed packages:"
       - npm list --depth=0
-      - cd ..
 
   pre_build:
     commands:
-      - echo Starting frontend pre-build checks...
-      - echo "Current working directory:"
-      - pwd
-      - cd web
-      - echo "Checking web directory structure:"
-      - ls -la
-      - echo "Checking src and tests directories:"
-      - ls -la src/ tests/
-      - echo Running JavaScript tests with Jest...
-      - echo "Starting Jest test execution..."
-      - npm test -- --coverage --ci || echo "Some tests may have failed, continuing build..."
-      - echo "Verifying test artifacts..."
-      - ls -la coverage/ 2>/dev/null || echo "Coverage directory generated"
-      - echo Validating static files...
-      - echo "Checking for required files..."
-      - ls -la src/index.html src/styles.css src/app.js
-      - echo "Frontend files ready for deployment"
-      - cd ..
+      - |
+        echo Starting frontend pre-build checks...
+        cd packages/web
+        echo "Current working directory:"
+        pwd
+        echo "Checking web directory structure:"
+        ls -la
+        echo "Checking src and tests directories:"
+        ls -la src/ tests/
+        echo Running JavaScript tests with Jest...
+        echo "Starting Jest test execution..."
+        npm test -- --coverage --ci || echo "Some tests may have failed, continuing build..."
+        echo "Verifying test artifacts..."
+        ls -la coverage/ 2>/dev/null || echo "Coverage directory generated"
+        echo Validating static files...
+        echo "Checking for required files..."
+        ls -la src/index.html src/styles.css src/app.js
+        echo "Frontend files ready for deployment"
 
   build:
     commands:
-      - echo Syncing frontend assets to S3...
-      - echo "Preparing static files for S3 deployment..."
       - |
-        if [ -d "web/src" ]; then
-          echo "Found web/src directory, syncing static files to S3..."
+        echo Syncing frontend assets to S3...
+        echo "Preparing static files for S3 deployment..."
+        if [ -d "packages/web/src" ]; then
+          echo "Found packages/web/src directory, syncing static files to S3..."
           # Sync HTML files with no cache
-          aws s3 sync ./web/src s3://$FRONTEND_BUCKET \
+          aws s3 sync ./packages/web/src s3://$FRONTEND_BUCKET \
             --exclude "*" \
             --include "*.html" \
             --delete \
@@ -63,21 +61,21 @@ phases:
             --content-type "text/html"
           
           # Sync CSS files with long cache
-          aws s3 sync ./web/src s3://$FRONTEND_BUCKET \
+          aws s3 sync ./packages/web/src s3://$FRONTEND_BUCKET \
             --exclude "*" \
             --include "*.css" \
             --cache-control "public, max-age=31536000" \
             --content-type "text/css"
           
           # Sync JS files with long cache
-          aws s3 sync ./web/src s3://$FRONTEND_BUCKET \
+          aws s3 sync ./packages/web/src s3://$FRONTEND_BUCKET \
             --exclude "*" \
             --include "*.js" \
             --cache-control "public, max-age=31536000" \
             --content-type "application/javascript"
           
           # Sync other static assets (images, fonts, icons, etc.)
-          aws s3 sync ./web/src s3://$FRONTEND_BUCKET \
+          aws s3 sync ./packages/web/src s3://$FRONTEND_BUCKET \
             --exclude "*.html" \
             --exclude "*.css" \
             --exclude "*.js" \
@@ -85,11 +83,10 @@ phases:
           
           echo "S3 sync completed successfully"
         else
-          echo "ERROR: web/src directory not found!"
+          echo "ERROR: packages/web/src directory not found!"
           exit 1
         fi
-      - echo Creating CloudFront invalidation...
-      - |
+        echo Creating CloudFront invalidation...
         INVALIDATION_ID=$(aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DIST_ID --paths "/*" --query 'Invalidation.Id' --output text) || echo "CloudFront invalidation failed - rate limited, but S3 sync was successful"
         echo "CloudFront invalidation ID: $INVALIDATION_ID"
 
@@ -109,24 +106,23 @@ phases:
 
 artifacts:
   files:
-    - web/src/*.html
-    - web/src/*.css
-    - web/src/*.js
+    - packages/web/src/*.html
+    - packages/web/src/*.css
+    - packages/web/src/*.js
   name: frontend-artifacts
   secondary-artifacts:
     coverage:
       files:
-        - web/coverage/**/*
+        - packages/web/coverage/**/*
       name: frontend-coverage-report
 
 reports:
   jest-reports:
     files:
-      - web/coverage/lcov.info
+      - packages/web/coverage/lcov.info
     file-format: 'CLOVERXML'
 
 cache:
   paths:
-    - /root/.cache/pip/**/*
-    - web/node_modules/**/*
+    - packages/web/node_modules/**/*
 
