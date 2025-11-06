@@ -23,11 +23,24 @@ resource "aws_kms_key" "flow_log_key" {
 }
 
 data "aws_iam_policy_document" "kms_key_policy" {
+  # Allow root account to manage the key
+  statement {
+    sid    = "Enable IAM User Permissions"
+    effect = "Allow"
+    principals {
+      type        = "AWS"
+      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"]
+    }
+    actions   = ["kms:*"]
+    resources = ["*"]
+  }
+  
+  # Allow CloudWatch Logs to use the key
   statement {
     effect = "Allow"
     principals {
       type        = "Service"
-      identifiers = ["logs.${data.aws_region.current.name}.amazonaws.com"]
+      identifiers = ["logs.${data.aws_region.current.id}.amazonaws.com"]
     }
     actions = [
       "kms:Encrypt*",
@@ -62,35 +75,38 @@ resource "aws_iam_role_policy_attachment" "vpc_flow_log" {
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
 }
 
-# AWS Config
-resource "aws_config_configuration_recorder" "main" {
-  name     = "${var.environment}-config-recorder"
-  role_arn = aws_iam_role.config.arn
+# AWS Config - Disabled for free tier (already have one recorder)
+# Free tier only allows 1 configuration recorder per region
+# Uncomment if you don't have an existing recorder
 
-  recording_group {
-    all_supported                 = true
-    include_global_resource_types = true
-  }
-}
+# resource "aws_config_configuration_recorder" "main" {
+#   name     = "${var.environment}-config-recorder"
+#   role_arn = aws_iam_role.config.arn
 
-resource "aws_config_delivery_channel" "main" {
-  name           = "${var.environment}-config-delivery"
-  s3_bucket_name = var.config_s3_bucket
-  s3_key_prefix  = "config"
-  sns_topic_arn  = var.sns_topic_arn
+#   recording_group {
+#     all_supported                 = true
+#     include_global_resource_types = true
+#   }
+# }
 
-  snapshot_delivery_properties {
-    delivery_frequency = "Six_Hours"
-  }
+# resource "aws_config_delivery_channel" "main" {
+#   name           = "${var.environment}-config-delivery"
+#   s3_bucket_name = var.config_s3_bucket
+#   s3_key_prefix  = "config"
+#   sns_topic_arn  = var.sns_topic_arn
 
-  depends_on = [aws_config_configuration_recorder.main]
-}
+#   snapshot_delivery_properties {
+#     delivery_frequency = "Six_Hours"
+#   }
 
-resource "aws_config_configuration_recorder_status" "main" {
-  name       = aws_config_configuration_recorder.main.name
-  is_enabled = true
-  depends_on = [aws_config_delivery_channel.main]
-}
+#   depends_on = [aws_config_configuration_recorder.main]
+# }
+
+# resource "aws_config_configuration_recorder_status" "main" {
+#   name       = aws_config_configuration_recorder.main.name
+#   is_enabled = true
+#   depends_on = [aws_config_delivery_channel.main]
+# }
 
 resource "aws_iam_role" "config" {
   name = "${var.environment}-config-role"
@@ -114,41 +130,44 @@ resource "aws_iam_role_policy_attachment" "config" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWS_ConfigRole"
 }
 
-# GuardDuty
-resource "aws_guardduty_detector" "main" {
-  enable = true
-  finding_publishing_frequency = "SIX_HOURS"
-  tags = var.tags
-}
+# GuardDuty - Disabled for free tier (requires subscription)
+# Uncomment if you have GuardDuty enabled in your account
+# resource "aws_guardduty_detector" "main" {
+#   enable = true
+#   finding_publishing_frequency = "SIX_HOURS"
+#   tags = var.tags
+# }
 
-# Security Hub
-resource "aws_securityhub_account" "main" {}
+# Security Hub - Disabled for free tier (requires subscription)
+# Uncomment if you have Security Hub enabled in your account
+# resource "aws_securityhub_account" "main" {}
 
-resource "aws_securityhub_standards_subscription" "cis" {
-  depends_on    = [aws_securityhub_account.main]
-  standards_arn = "arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark/v/1.2.0"
-}
+# resource "aws_securityhub_standards_subscription" "cis" {
+#   depends_on    = [aws_securityhub_account.main]
+#   standards_arn = "arn:aws:securityhub:::ruleset/cis-aws-foundations-benchmark/v/1.2.0"
+# }
 
-resource "aws_securityhub_standards_subscription" "aws_foundational" {
-  depends_on    = [aws_securityhub_account.main]
-  standards_arn = "arn:aws:securityhub:${data.aws_region.current.name}::standards/aws-foundational-security-best-practices/v/1.0.0"
-}
+# resource "aws_securityhub_standards_subscription" "aws_foundational" {
+#   depends_on    = [aws_securityhub_account.main]
+#   standards_arn = "arn:aws:securityhub:${data.aws_region.current.name}::standards/aws-foundational-security-best-practices/v/1.0.0"
+# }
 
-# AWS Config Rules
-resource "aws_config_config_rule" "required_tags" {
-  name        = "${var.environment}-required-tags"
-  description = "Ensures required tags are present on resources"
+# AWS Config Rules - Disabled (requires Config Recorder)
+# Uncomment if you have Config enabled
+# resource "aws_config_config_rule" "required_tags" {
+#   name        = "${var.environment}-required-tags"
+#   description = "Ensures required tags are present on resources"
 
-  source {
-    owner             = "AWS"
-    source_identifier = "REQUIRED_TAGS"
-  }
+#   source {
+#     owner             = "AWS"
+#     source_identifier = "REQUIRED_TAGS"
+#   }
 
-  input_parameters = jsonencode({
-    tag1Key = "Environment"
-    tag2Key = "Project"
-  })
-}
+#   input_parameters = jsonencode({
+#     tag1Key = "Environment"
+#     tag2Key = "Project"
+#   })
+# }
 
 # IAM Access Analyzer
 resource "aws_accessanalyzer_analyzer" "main" {

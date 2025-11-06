@@ -4,11 +4,26 @@ output "alb_dns_name" {
 output "cloudfront_domain_name" {
   value = module.cloudfront.cloudfront_domain_name
 }
+output "cloudfront_distribution_id" {
+  value = module.cloudfront.cloudfront_distribution_id
+}
 output "frontend_bucket_arn" {
   value = module.s3.frontend_bucket_arn
 }
+output "frontend_bucket_name" {
+  value = module.s3.frontend_bucket_name
+}
 output "ecs_cluster_id" {
   value = module.ecs.cluster_id
+}
+output "ecs_cluster_name" {
+  value = module.ecs.cluster_name
+}
+output "ecs_service_name" {
+  value = module.ecs.service_name
+}
+output "ecr_repository_url" {
+  value = module.ecr.repository_url
 }
 output "sns_topic_arn" {
   value = module.sns.sns_topic_arn

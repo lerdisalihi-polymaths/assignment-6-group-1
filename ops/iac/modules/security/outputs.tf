@@ -13,12 +13,13 @@ output "config_role_arn" {
   value       = aws_iam_role.config.arn
 }
 
-output "guardduty_detector_id" {
-  description = "ID of the GuardDuty detector"
-  value       = aws_guardduty_detector.main.id
-}
+# Disabled for free tier
+# output "guardduty_detector_id" {
+#   description = "ID of the GuardDuty detector"
+#   value       = aws_guardduty_detector.main.id
+# }
 
-output "security_hub_arn" {
-  description = "ARN of the Security Hub"
-  value       = aws_securityhub_account.main.arn
-}
+# output "security_hub_arn" {
+#   description = "ARN of the Security Hub"
+#   value       = aws_securityhub_account.main.arn
+# }

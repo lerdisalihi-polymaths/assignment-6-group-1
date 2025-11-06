@@ -4,6 +4,16 @@
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
+# CodeStar Connection for GitHub
+resource "aws_codestarconnections_connection" "github" {
+  name          = "github-connection-${random_string.suffix.result}"
+  provider_type = "GitHub"
+  
+  tags = merge(var.tags, {
+    Name = "GitHub CodeStar Connection"
+  })
+}
+
 # S3 bucket for pipeline artifacts
 resource "aws_s3_bucket" "artifacts" {
   bucket        = "ecommerce-cicd-artifacts-${random_string.suffix.result}"
@@ -194,16 +204,16 @@ resource "aws_codepipeline" "terraform" {
     action {
       name             = "Source"
       category         = "Source"
-      owner            = "ThirdParty"
-      provider         = "GitHub"
+      owner            = "AWS"
+      provider         = "CodeStarSourceConnection"
       version          = "1"
       output_artifacts = ["terraform_source"]
 
       configuration = {
-        Owner      = var.github_owner
-        Repo       = var.github_repo
-        Branch     = var.github_branch
-        OAuthToken = var.github_token
+        ConnectionArn    = aws_codestarconnections_connection.github.arn
+        FullRepositoryId = "${var.github_owner}/${var.github_repo}"
+        BranchName       = var.github_branch
+        OutputArtifactFormat = "CODE_ZIP"
       }
     }
   }
@@ -274,16 +284,16 @@ resource "aws_codepipeline" "frontend" {
     action {
       name             = "Source"
       category         = "Source"
-      owner            = "ThirdParty"
-      provider         = "GitHub"
+      owner            = "AWS"
+      provider         = "CodeStarSourceConnection"
       version          = "1"
       output_artifacts = ["frontend_source"]
 
       configuration = {
-        Owner      = var.github_owner
-        Repo       = var.github_repo
-        Branch     = var.github_branch
-        OAuthToken = var.github_token
+        ConnectionArn    = aws_codestarconnections_connection.github.arn
+        FullRepositoryId = "${var.github_owner}/${var.github_repo}"
+        BranchName       = var.github_branch
+        OutputArtifactFormat = "CODE_ZIP"
       }
     }
   }
@@ -325,16 +335,16 @@ resource "aws_codepipeline" "backend" {
     action {
       name             = "Source"
       category         = "Source"
-      owner            = "ThirdParty"
-      provider         = "GitHub"
+      owner            = "AWS"
+      provider         = "CodeStarSourceConnection"
       version          = "1"
       output_artifacts = ["backend_source"]
 
       configuration = {
-        Owner      = var.github_owner
-        Repo       = var.github_repo
-        Branch     = var.github_branch
-        OAuthToken = var.github_token
+        ConnectionArn    = aws_codestarconnections_connection.github.arn
+        FullRepositoryId = "${var.github_owner}/${var.github_repo}"
+        BranchName       = var.github_branch
+        OutputArtifactFormat = "CODE_ZIP"
       }
     }
   }

@@ -160,16 +160,19 @@ variable "health_check_path" {
 variable "route53_zone_id" {
   description = "Route 53 Hosted Zone ID for API DNS name"
   type        = string
+  default     = ""
 }
 
 variable "api_dns_name" {
   description = "DNS name for the API (e.g., api.example.com)"
   type        = string
+  default     = ""
 }
 
 variable "alb_zone_id" {
   description = "ALB DNS zone ID (from AWS documentation for your region)"
   type        = string
+  default     = ""
 }
 
 # ECS
@@ -210,6 +213,7 @@ variable "log_retention_days" {
 variable "sns_slack_webhook" {
   description = "SNS Slack webhook URL"
   type        = string
+  default     = ""
 }
 
 # Athena
@@ -230,11 +234,13 @@ variable "athena_output_location" {
 variable "github_owner" {
   description = "GitHub repository owner"
   type        = string
+  default     = ""
 }
 
 variable "github_repo" {
   description = "GitHub repository name"
   type        = string
+  default     = ""
 }
 
 variable "github_branch" {

@@ -2,6 +2,12 @@ provider "aws" {
   region = var.region
 }
 
+# Provider alias for us-east-1 (required for CloudFront/WAF resources)
+provider "aws" {
+  alias  = "us_east_1"
+  region = "us-east-1"
+}
+
 # Data sources for account and region information
 data "aws_caller_identity" "current" {}
 
@@ -115,7 +121,7 @@ module "alb" {
 # Standby ALB (Warm Standby)
 module "alb_standby" {
   source                     = "./modules/alb"
-  name                       = "${var.alb_name}-standby"
+  name                       = "${var.alb_name}-stby"
   security_group_ids         = [module.vpc.alb_security_group_id]
   access_logs_bucket         = module.s3.alb_logs_bucket_name
   public_subnet_ids          = module.vpc.public_subnet_ids
@@ -132,7 +138,7 @@ module "ecs" {
   tags                  = var.tags
   cpu                   = var.cpu
   memory                = var.memory
-  container_definitions = data.template_file.container_definition.rendered
+  container_definitions = local.container_definition
   desired_count         = var.desired_count
   private_subnet_ids    = module.vpc.private_subnet_ids
   security_group_ids    = [module.vpc.ecs_security_group_id]
@@ -148,7 +154,7 @@ module "ecs_standby" {
   tags                  = var.tags
   cpu                   = var.cpu
   memory                = var.memory
-  container_definitions = data.template_file.container_definition_standby.rendered
+  container_definitions = local.container_definition_standby
   desired_count         = 1 # Minimal standby
   private_subnet_ids    = module.vpc.private_subnet_ids
   security_group_ids    = [module.vpc.ecs_security_group_id]
@@ -160,27 +166,31 @@ module "ecs_standby" {
 # Route 53 Failover for Warm Standby (commented out due to access restrictions)
 # Uncomment when you have access to the Route53 hosted zone
 
-module "route53_failover" {
-  source               = "./modules/route53"
-  primary_alb_dns_name = module.alb.alb_dns_name
-  standby_alb_dns_name = module.alb_standby.alb_dns_name
-  alb_zone_id          = var.alb_zone_id
-  route53_zone_id      = var.route53_zone_id
-  api_dns_name         = var.api_dns_name
-  health_check_path    = var.health_check_path
-  tags                 = var.tags
-}
+# module "route53_failover" {
+#   source               = "./modules/route53"
+#   primary_alb_dns_name = module.alb.alb_dns_name
+#   standby_alb_dns_name = module.alb_standby.alb_dns_name
+#   alb_zone_id          = var.alb_zone_id
+#   route53_zone_id      = var.route53_zone_id
+#   api_dns_name         = var.api_dns_name
+#   health_check_path    = var.health_check_path
+#   tags                 = var.tags
+# }
 
 # WAF Module
 module "waf" {
-  source               = "./modules/waf"
-  environment          = var.environment
-  alb_arn              = module.alb.alb_arn
+  source                = "./modules/waf"
+  environment           = var.environment
+  alb_arn               = module.alb.alb_arn
   enable_alb_protection = true
-  blacklisted_ips      = var.waf_blacklisted_ips
-  rate_limit           = var.waf_rate_limit
-  allowed_countries    = var.waf_allowed_countries
-  tags                 = merge(var.tags, { Name = "${var.environment}-waf" })
+  blacklisted_ips       = var.waf_blacklisted_ips
+  rate_limit            = var.waf_rate_limit
+  allowed_countries     = var.waf_allowed_countries
+  tags                  = merge(var.tags, { Name = "${var.environment}-waf" })
+  
+  providers = {
+    aws.us_east_1 = aws.us_east_1
+  }
 }
 
 module "cloudfront" {
@@ -210,7 +220,7 @@ module "cloudwatch" {
 
 module "sns" {
   source          = "./modules/sns"
-  name            = "alerts"
+  name            = "${var.environment}-alerts"
   tags            = var.tags
   sns_alert_email = var.sns_alert_email
   slack_webhook   = var.sns_slack_webhook

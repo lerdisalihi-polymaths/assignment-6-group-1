@@ -29,14 +29,14 @@ azs             = ["us-east-1a", "us-east-1b"]       # Availability zones
 # =====================
 # S3 Buckets
 # =====================
-frontend_bucket_name        = "group1-frontend-dev" # S3 bucket for frontend
-alb_logs_bucket_name        = "group1-alb-logs-dev" # S3 bucket for ALB logs
-cloudfront_logs_bucket_name = "group1-cf-logs-dev"  # S3 bucket for CloudFront logs
+frontend_bucket_name        = "group1-frontend-dev123141241" # S3 bucket for frontend
+alb_logs_bucket_name        = "group1-alb-logs-dev123141241" # S3 bucket for ALB logs
+cloudfront_logs_bucket_name = "group1-cf-logs-dev123141241"  # S3 bucket for CloudFront logs
 
 # =====================
 # ECS (Backend API)
 # =====================
-ecs_name       = "task-api-dev"      # ECS cluster/service name
+ecs_name       = "task-api-dev123141241"      # ECS cluster/service name
 container_name = "api"               # ECS container name
 container_port = 3000                # Container port (matches Dockerfile EXPOSE)
 cpu            = "256"               # Fargate CPU units (dev: 256)
@@ -49,7 +49,7 @@ desired_count  = 1                   # Number of ECS tasks
 # =====================
 # Load Balancer (ALB)
 # =====================
-alb_name          = "task-alb-dev"      # ALB name
+alb_name          = "task-alb-dev123141241"      # ALB name
 target_port       = 3000                # Target group port
 health_check_path = "/health"           # Health check path
 
@@ -221,8 +221,8 @@ ecs_cpu_threshold = 80 # CPU alarm threshold (%)
 # =====================
 # Athena (Log Analysis)
 # =====================
-athena_database_name   = "access_logs_dev"                          # Athena DB name
-athena_workgroup_name  = "logs_workgroup_dev"                       # Athena workgroup
+athena_database_name   = "access_logs_dev123141241"                          # Athena DB name
+athena_workgroup_name  = "logs_workgroup_dev123141241"                       # Athena workgroup
 athena_output_location = "s3://athena-results-dev/"                 # Athena output S3 bucket URI (ensure this bucket exists)
 
 # =====================

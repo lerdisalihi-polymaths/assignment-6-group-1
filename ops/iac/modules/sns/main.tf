@@ -2,6 +2,10 @@
 resource "aws_sns_topic" "alerts" {
   name = var.name
   tags = var.tags
+  
+  lifecycle {
+    ignore_changes = [tags]
+  }
 }
 
 resource "aws_sns_topic_subscription" "email" {

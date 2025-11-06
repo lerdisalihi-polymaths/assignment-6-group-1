@@ -1,5 +1,16 @@
 # Outputs for CI/CD module
 
+# CodeStar Connection
+output "codestar_connection_arn" {
+  description = "ARN of the CodeStar Connection to GitHub (needs authorization in AWS Console)"
+  value       = aws_codestarconnections_connection.github.arn
+}
+
+output "codestar_connection_status" {
+  description = "Status of the CodeStar Connection"
+  value       = aws_codestarconnections_connection.github.connection_status
+}
+
 # Pipeline outputs
 output "terraform_pipeline_name" {
   description = "Name of the Terraform CodePipeline"
