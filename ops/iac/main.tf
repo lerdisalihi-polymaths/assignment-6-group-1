@@ -160,16 +160,16 @@ module "ecs_standby" {
 # Route 53 Failover for Warm Standby (commented out due to access restrictions)
 # Uncomment when you have access to the Route53 hosted zone
 
-# module "route53_failover" {
-#   source               = "./modules/route53"
-#   primary_alb_dns_name = module.alb.alb_dns_name
-#   standby_alb_dns_name = module.alb_standby.alb_dns_name
-#   alb_zone_id          = var.alb_zone_id
-#   route53_zone_id      = var.route53_zone_id
-#   api_dns_name         = var.api_dns_name
-#   health_check_path    = var.health_check_path
-#   tags                 = var.tags
-# }
+module "route53_failover" {
+  source               = "./modules/route53"
+  primary_alb_dns_name = module.alb.alb_dns_name
+  standby_alb_dns_name = module.alb_standby.alb_dns_name
+  alb_zone_id          = var.alb_zone_id
+  route53_zone_id      = var.route53_zone_id
+  api_dns_name         = var.api_dns_name
+  health_check_path    = var.health_check_path
+  tags                 = var.tags
+}
 
 # WAF Module
 module "waf" {
