@@ -11,81 +11,76 @@ phases:
       python: 3.11
       docker: 20
     commands:
-      - echo Installing backend dependencies...
-      - echo "Working directory at start:"
-      - pwd
-      - echo "Directory structure:"
-      - ls -la
-      - echo "Navigating to packages directory:"
-      - cd ..
-      - pwd
-      - echo "Contents of packages directory:"
-      - ls -la
-      - echo "Installing Python dependencies for testing..."
-      - pip install --upgrade pip
-      - cd api
-      - pip install -r requirements.txt
-      - pip install pytest pytest-cov pylint flake8 bandit safety
-      - echo "Checking installed packages:"
-      - pip list
-      - cd ..
+      - |
+        echo Installing backend dependencies...
+        echo "Working directory at start:"
+        pwd
+        echo "Directory structure:"
+        ls -la
+        echo "Installing Python dependencies for testing..."
+        pip install --upgrade pip
+        cd packages/api
+        pip install -r requirements.txt
+        pip install pytest pytest-cov pylint flake8 bandit safety
+        echo "Checking installed packages:"
+        pip list
 
   pre_build:
     commands:
-      - echo Starting backend pre-build checks...
-      - echo "Current working directory:"
-      - pwd
-      - cd api
-      - echo "Checking api directory structure:"
-      - ls -la
-      - echo "Checking src and tests directories:"
-      - ls -la src/ tests/
-      - echo Running code quality checks...
-      - echo "Running Pylint on source code..."
-      - python -m pylint src/app.py --exit-zero || echo "Pylint check completed with warnings"
-      - echo "Running Flake8..."
-      - python -m flake8 src/ tests/ --max-line-length=120 --exit-zero || echo "Flake8 check completed"
-      - echo "Running Bandit security checks..."
-      - python -m bandit -r src/ -ll --exit-zero || echo "Bandit security check completed"
-      - echo "Checking for dependency vulnerabilities..."
-      - python -m safety check --json || echo "Safety check completed"
-      - echo Running unit tests with pytest...
-      - echo "Starting test execution..."
-      - pytest tests/ --cov=src --cov-report=xml --cov-report=html --cov-report=term -v || echo "Some tests may have failed, continuing build..."
-      - echo "Verifying test artifacts..."
-      - ls -la coverage.xml htmlcov/ 2>/dev/null || echo "Coverage files generated"
-      - echo "Pre-build checks completed"
-      - cd ..
-      - echo Logging in to Amazon ECR...
-      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
-      - echo "ECR login successful"
-      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
-      - IMAGE_TAG=${COMMIT_HASH:=latest}
-      - echo "Image will be tagged as $IMAGE_TAG"
+      - |
+        echo Starting backend pre-build checks...
+        cd packages/api
+        echo "Current working directory:"
+        pwd
+        echo "Checking api directory structure:"
+        ls -la
+        echo "Checking src and tests directories:"
+        ls -la src/ tests/
+        echo Running code quality checks...
+        echo "Running Pylint on source code..."
+        python -m pylint src/app.py --exit-zero || echo "Pylint check completed with warnings"
+        echo "Running Flake8..."
+        python -m flake8 src/ tests/ --max-line-length=120 --exit-zero || echo "Flake8 check completed"
+        echo "Running Bandit security checks..."
+        python -m bandit -r src/ -ll --exit-zero || echo "Bandit security check completed"
+        echo "Checking for dependency vulnerabilities..."
+        python -m safety check --json || echo "Safety check completed"
+        echo Running unit tests with pytest...
+        echo "Starting test execution..."
+        pytest tests/ --cov=src --cov-report=xml --cov-report=html --cov-report=term -v || echo "Some tests may have failed, continuing build..."
+        echo "Verifying test artifacts..."
+        ls -la coverage.xml htmlcov/ 2>/dev/null || echo "Coverage files generated"
+        echo "Pre-build checks completed"
+        echo Logging in to Amazon ECR...
+        aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
+        echo "ECR login successful"
+        COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+        IMAGE_TAG=${COMMIT_HASH:=latest}
+        echo "Image will be tagged as $IMAGE_TAG"
 
   build:
     commands:
-      - echo Build started on `date`
-      - echo Building Docker image...
-      - echo "Building image from api directory..."
-      - cd api
-      - pwd
-      - ls -la
-      - docker build -t $ECR_REPOSITORY:$IMAGE_TAG .
-      - docker tag $ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-      - docker tag $ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
-      - echo "Docker image built successfully"
-      - echo "Image details:"
-      - docker images | grep $ECR_REPOSITORY
-      - echo Pushing Docker image to ECR...
-      - docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-      - docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
-      - echo "Docker image pushed successfully"
-      - cd ..
+      - |
+        echo "Build started on $(date)"
+        echo Building Docker image...
+        echo "Building image from api directory..."
+        cd packages/api
+        pwd
+        ls -la
+        docker build -t $ECR_REPOSITORY:$IMAGE_TAG .
+        docker tag $ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        docker tag $ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
+        echo "Docker image built successfully"
+        echo "Image details:"
+        docker images | grep $ECR_REPOSITORY
+        echo Pushing Docker image to ECR...
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+        echo "Docker image pushed successfully"
 
   post_build:
     commands:
-      - echo Build completed on `date`
+      - echo "Build completed on $(date)"
       - echo Creating ECS task definition...
       - |
         cat > taskdef.json <<EOF
@@ -164,20 +159,20 @@ phases:
 artifacts:
   files:
     - taskdef.json
-    - api/requirements.txt
-    - api/pyproject.toml
+    - packages/api/requirements.txt
+    - packages/api/pyproject.toml
   name: backend-artifacts
   secondary-artifacts:
     coverage:
       files:
-        - api/coverage.xml
-        - api/htmlcov/**/*
+        - packages/api/coverage.xml
+        - packages/api/htmlcov/**/*
       name: coverage-report
 
 reports:
   pytest-reports:
     files:
-      - api/coverage.xml
+      - packages/api/coverage.xml
     file-format: 'COBERTURAXML'
 
 cache:
