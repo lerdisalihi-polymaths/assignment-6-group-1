@@ -198,6 +198,7 @@ resource "aws_iam_role_policy" "codebuild" {
           "ecs:*",
           "ecr:*",
           "elbv2:*",
+          "elasticloadbalancing:*",
           "route53:*",
           "cloudfront:*",
           "s3:*",
@@ -206,7 +207,15 @@ resource "aws_iam_role_policy" "codebuild" {
           "sns:*",
           "cloudwatch:*",
           "application-autoscaling:*",
-          "xray:*"
+          "xray:*",
+          "rds:*",
+          "athena:*",
+          "secretsmanager:*",
+          "kms:*",
+          "wafv2:*",
+          "access-analyzer:*",
+          "glue:*",
+          "config:*"
         ]
         Resource = "*"
       },
