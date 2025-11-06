@@ -146,28 +146,58 @@ resource "aws_codebuild_project" "backend" {
     privileged_mode             = true
 
     environment_variable {
-      name  = "ECR_REPO"
-      value = var.ecr_repository_url
+      name  = "ECR_REGISTRY"
+      value = split("/", var.ecr_repository_url)[0]
     }
 
     environment_variable {
-      name  = "ECS_CLUSTER"
+      name  = "ECR_REPOSITORY"
+      value = split("/", var.ecr_repository_url)[1]
+    }
+
+    environment_variable {
+      name  = "ECS_CLUSTER_NAME"
       value = var.ecs_cluster_name
     }
 
     environment_variable {
-      name  = "ECS_SERVICE"
+      name  = "ECS_SERVICE_NAME"
       value = var.ecs_service_name
     }
 
     environment_variable {
-      name  = "ALB_NAME"
-      value = var.alb_name
+      name  = "ECS_TASK_FAMILY"
+      value = var.ecs_service_name
     }
 
     environment_variable {
-      name  = "APP_HEALTH_URL"
-      value = var.app_health_url
+      name  = "ECS_EXECUTION_ROLE_ARN"
+      value = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.ecs_service_name}-ecs-task-execution"
+    }
+
+    environment_variable {
+      name  = "ECS_TASK_ROLE_ARN"
+      value = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.ecs_service_name}-ecs-task-role"
+    }
+
+    environment_variable {
+      name  = "CONTAINER_NAME"
+      value = "api"
+    }
+
+    environment_variable {
+      name  = "CLOUDWATCH_LOG_GROUP"
+      value = "/ecs/${var.ecs_service_name}"
+    }
+
+    environment_variable {
+      name  = "DATABASE_URL"
+      value = "postgresql://taskuser:taskpassword@localhost:5432/taskdb"
+    }
+
+    environment_variable {
+      name  = "ALB_DNS_NAME"
+      value = "task-alb-dev123141241-1337149599.us-east-1.elb.amazonaws.com"
     }
 
     environment_variable {
