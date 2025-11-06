@@ -5,7 +5,19 @@ from datetime import datetime
 import os
 
 app = Flask(__name__)
-CORS(app)
+# Enable CORS for all routes and origins (for development/testing)
+# In production, you should restrict this to specific origins
+CORS(app, resources={
+    r"/api/*": {
+        "origins": "*",
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type"]
+    },
+    r"/health": {
+        "origins": "*",
+        "methods": ["GET", "OPTIONS"]
+    }
+})
 
 # Database configuration
 database_url = os.getenv('DATABASE_URL', 'postgresql://postgres:postgres@localhost:5432/taskdb')
