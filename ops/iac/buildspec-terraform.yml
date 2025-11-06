@@ -27,32 +27,33 @@ phases:
       - pwd
       - echo "Directory structure:"
       - ls -la
-      - echo "Changing to ops/iac directory..."
-      - cd ops/iac
-      - pwd
-      - ls -la
-      - echo Initializing Terraform...
-      - terraform init -backend=false
-      - echo Formatting and validating Terraform...
-      - terraform fmt -check -recursive
-      - terraform validate
-      - echo Running security scan with tfsec...
-      - wget -O tfsec https://github.com/aquasecurity/tfsec/releases/latest/download/tfsec-linux-amd64
-      - chmod +x tfsec
-      - ./tfsec --format json --out tfsec-results.json . || true
-      - echo Setting up Terraform backend...
-      - terraform init -backend-config="bucket=$TF_BACKEND_BUCKET" -backend-config="key=$TF_BACKEND_KEY" -backend-config="region=us-east-1"
+      - |
+        echo "Changing to ops/iac directory..."
+        cd ops/iac
+        pwd
+        ls -la
+        echo Initializing Terraform...
+        terraform init -backend=false
+        echo Formatting and validating Terraform...
+        terraform fmt -check -recursive
+        terraform validate
+        echo Running security scan with tfsec...
+        wget -O tfsec https://github.com/aquasecurity/tfsec/releases/latest/download/tfsec-linux-amd64
+        chmod +x tfsec
+        ./tfsec --format json --out tfsec-results.json . || true
+        echo Setting up Terraform backend...
+        terraform init -backend-config="bucket=$TF_BACKEND_BUCKET" -backend-config="key=$TF_BACKEND_KEY" -backend-config="region=us-east-1"
 
   build:
     commands:
-      - echo Creating and applying Terraform plan...
-      - cd ops/iac
-      - echo "Current working directory:"
-      - pwd
-      - echo "Directory structure:"
-      - ls -la
-      - echo "Updating terraform.tfvars with secrets from environment variables..."
       - |
+        echo Creating and applying Terraform plan...
+        cd ops/iac
+        echo "Current working directory:"
+        pwd
+        echo "Directory structure:"
+        ls -la
+        echo "Updating terraform.tfvars with secrets from environment variables..."
         # Backup original tfvars
         cp terraform.tfvars terraform.tfvars.backup
         # Add secrets to terraform.tfvars
@@ -60,22 +61,23 @@ phases:
         echo 'sns_slack_webhook = "'$SNS_SLACK_WEBHOOK'"' >> terraform.tfvars  
         echo 'sns_alert_email = "'$SNS_ALERT_EMAIL'"' >> terraform.tfvars
         echo 'app_secret_string = "'$APP_SECRET_STRING'"' >> terraform.tfvars
-      - echo "Running terraform plan..."
-      - terraform plan -detailed-exitcode -out=tfplan -var-file="terraform.tfvars"
-      - terraform show -json tfplan > tfplan.json
-      - echo Applying Terraform changes...
-      - terraform apply -auto-approve tfplan
-      - echo Terraform apply completed successfully
-      - terraform output -json > terraform-outputs.json
+        echo "Running terraform plan..."
+        terraform plan -detailed-exitcode -out=tfplan -var-file="terraform.tfvars"
+        terraform show -json tfplan > tfplan.json
+        echo Applying Terraform changes...
+        terraform apply -auto-approve tfplan
+        echo Terraform apply completed successfully
+        terraform output -json > terraform-outputs.json
 
   post_build:
     commands:
-      - cd ops/iac
-      - echo "Terraform operations completed on $(date)"
-      - echo "Infrastructure deployment summary:"
-      - terraform output
-      - echo Cleaning up temporary files...
-      - rm -f tfplan
+      - |
+        cd ops/iac
+        echo "Terraform operations completed on $(date)"
+        echo "Infrastructure deployment summary:"
+        terraform output
+        echo Cleaning up temporary files...
+        rm -f tfplan
 
 artifacts:
   files:
