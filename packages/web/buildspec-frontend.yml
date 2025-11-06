@@ -14,11 +14,6 @@ phases:
       - pwd
       - echo "Directory structure:"
       - ls -la
-      - echo "Navigating to packages/web directory:"
-      - cd packages/web
-      - pwd
-      - echo "Contents of web directory:"
-      - ls -la
       - echo "Installing Node.js dependencies..."
       - npm install
       - echo "Checking installed packages:"
@@ -28,7 +23,6 @@ phases:
     commands:
       - |
         echo Starting frontend pre-build checks...
-        cd packages/web
         echo "Current working directory:"
         pwd
         echo "Checking web directory structure:"
@@ -52,14 +46,15 @@ phases:
         echo "=== Starting S3 Sync ==="
         echo "FRONTEND_BUCKET: $FRONTEND_BUCKET"
         echo "CLOUDFRONT_DIST_ID: $CLOUDFRONT_DIST_ID"
-        echo "Checking for packages/web/src directory..."
-        if [ -d "packages/web/src" ]; then
-          echo "✓ Found packages/web/src directory"
+        echo "Current directory: $(pwd)"
+        echo "Checking for src directory..."
+        if [ -d "src" ]; then
+          echo "✓ Found src directory"
           echo "Contents:"
-          ls -la packages/web/src/
+          ls -la src/
           
           echo "=== Syncing HTML files ==="
-          aws s3 sync ./packages/web/src s3://$FRONTEND_BUCKET \
+          aws s3 sync ./src s3://$FRONTEND_BUCKET \
             --exclude "*" \
             --include "*.html" \
             --delete \
@@ -67,21 +62,21 @@ phases:
             --content-type "text/html" || { echo "HTML sync failed"; exit 1; }
           
           echo "=== Syncing CSS files ==="
-          aws s3 sync ./packages/web/src s3://$FRONTEND_BUCKET \
+          aws s3 sync ./src s3://$FRONTEND_BUCKET \
             --exclude "*" \
             --include "*.css" \
             --cache-control "public, max-age=31536000" \
             --content-type "text/css" || { echo "CSS sync failed"; exit 1; }
           
           echo "=== Syncing JS files ==="
-          aws s3 sync ./packages/web/src s3://$FRONTEND_BUCKET \
+          aws s3 sync ./src s3://$FRONTEND_BUCKET \
             --exclude "*" \
             --include "*.js" \
             --cache-control "public, max-age=31536000" \
             --content-type "application/javascript" || { echo "JS sync failed"; exit 1; }
           
           echo "=== Syncing other assets ==="
-          aws s3 sync ./packages/web/src s3://$FRONTEND_BUCKET \
+          aws s3 sync ./src s3://$FRONTEND_BUCKET \
             --exclude "*.html" \
             --exclude "*.css" \
             --exclude "*.js" \
@@ -89,9 +84,9 @@ phases:
           
           echo "✓ S3 sync completed successfully"
         else
-          echo "✗ ERROR: packages/web/src directory not found!"
+          echo "✗ ERROR: src directory not found!"
           pwd
-          ls -la packages/
+          ls -la
           exit 1
         fi
         
@@ -122,23 +117,23 @@ phases:
 
 artifacts:
   files:
-    - packages/web/src/*.html
-    - packages/web/src/*.css
-    - packages/web/src/*.js
+    - src/*.html
+    - src/*.css
+    - src/*.js
   name: frontend-artifacts
   secondary-artifacts:
     coverage:
       files:
-        - packages/web/coverage/**/*
+        - coverage/**/*
       name: frontend-coverage-report
 
 reports:
   jest-reports:
     files:
-      - packages/web/coverage/lcov.info
+      - coverage/lcov.info
     file-format: 'CLOVERXML'
 
 cache:
   paths:
-    - packages/web/node_modules/**/*
+    - node_modules/**/*
 
