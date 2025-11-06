@@ -192,7 +192,7 @@ resource "aws_codebuild_project" "backend" {
 
     environment_variable {
       name  = "DATABASE_URL"
-      value = "postgresql://taskuser:taskpassword@localhost:5432/taskdb"
+      value = "postgresql://postgres:b9*6H[oU#BeezqOL@task-api-dev123141241-db-primary.cqb8wccsmbby.us-east-1.rds.amazonaws.com:5432/infrastructure"
     }
 
     environment_variable {
